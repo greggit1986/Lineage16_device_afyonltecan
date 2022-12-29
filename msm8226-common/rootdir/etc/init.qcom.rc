@@ -1,0 +1,1528 @@
+# Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
+#
+# COMBINE STOCK SETTING FROM AFYON WITH CURRENT msm8226-common
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of The Linux Foundation nor
+#       the names of its contributors may be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NON-INFRINGEMENT ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+import init.qcom.power.rc #Ajouté
+import init.qcom.usb.rc
+import init.target.rc
+#import init.ril.rc #supprimé
+
+on early-init
+    mount debugfs debugfs /sys/kernel/debug
+    chmod 0755 /sys/kernel/debug # ajouté
+
+    # Increase max readahead size to 512 KB - ajouté
+    restorecon --recursive /sys/block/mmcblk0/queue # ajouté
+    write /sys/block/mmcblk0/queue/read_ahead_kb 512 # ajouté
+    write /sys/block/mmcblk0/queue/scheduler noop # ajouté
+
+    write /sys/block/zram0/comp_algorithm lz4   # ajouté  
+
+    mkdir /firmware 0771 system system # ajouté
+    mkdir /firmware-modem 0771 system system # ajouté
+
+    mkdir /persist 0771 system system # ajouté
+
+    mkdir /efs 0771 system radio # ajouté
+
+    symlink /data/tombstones /tombstones # ajouté
+
+    # Set permissions so radio can read  # ajouté
+    chmod 0444 /proc/cmdline   # ajouté
+
+on init
+    # See storage config details at http://source.android.com/tech/storage/
+    #     mkdir /mnt/media_rw/extSdCard 0700 media_rw media_rw  #supprimé
+    #     mkdir /mnt/media_rw/UsbDriveA 0700 media_rw media_rw  #supprimé
+    #     mkdir /mnt/media_rw/UsbDriveB 0700 media_rw media_rw  #supprimé
+    #     mkdir /mnt/media_rw/UsbDriveC 0700 media_rw media_rw  #supprimé
+    #     mkdir /mnt/media_rw/UsbDriveD 0700 media_rw media_rw  #supprimé
+    #     mkdir /mnt/media_rw/UsbDriveE 0700 media_rw media_rw  #supprimé
+    #     mkdir /mnt/media_rw/UsbDriveF 0700 media_rw media_rw  #supprimé
+    
+    # Set permissions for persist partition
+    #         mkdir /persist 0771 system system  #supprimé
+    # See storage config details at http://source.android.com/tech/storage/
+    #         mkdir /mnt/shell/emulated 0700 shell shell  #supprimé
+    #         mkdir /storage/emulated 0555 root root    #supprimé  
+
+    #            export EXTERNAL_STORAGE /storage/emulated/legacy   #supprimé
+    #            export EMULATED_STORAGE_SOURCE /mnt/shell/emulated   #supprimé
+    #            export EMULATED_STORAGE_TARGET /storage/emulated   #supprimé
+    # This is no longer supported from KK release.
+    #export BOOTCLASSPATH ${BOOTCLASSPATH}:/system/framework/qcom.fmradio.jar
+
+    #supprimé            export SECONDARY_STORAGE /storage/extSdCard
+    #supprimé            mkdir /storage/extSdCard 0555 root root
+    # Support legacy paths
+    #supprimé            symlink /storage/emulated/legacy /sdcard
+    symlink /sdcard /mnt/sdcard #etait  symlink /storage/emulated/legacy /mnt/sdcard
+    symlink /sdcard /mnt/sdcard0 #etait  symlink /storage/emulated/legacy /storage/sdcard0
+    #supprimé            symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+    write /proc/sys/vm/page-cluster 0     #ajouté 
+    # map "real" external storages paths also in same way. backwards compatibility.
+    #supprimé            symlink /storage/extSdCard /mnt/extSdCard
+    #supprimé            symlink /storage/UsbDriveA /mnt/UsbDriveA
+    #supprimé            symlink /storage/UsbDriveB /mnt/UsbDriveB
+    #supprimé            symlink /storage/UsbDriveC /mnt/UsbDriveC
+    #supprimé            symlink /storage/UsbDriveD /mnt/UsbDriveD
+    #supprimé            symlink /storage/UsbDriveE /mnt/UsbDriveE
+    #supprimé            symlink /storage/UsbDriveF /mnt/UsbDriveF
+
+    #supprimé            export SECONDARY_STORAGE /storage/extSdCard
+    
+    #supprimé            mkdir /storage/extSdCard 0700 root root
+    #supprimé            mkdir /storage/UsbDriveA 0700 root root
+    #supprimé            mkdir /storage/UsbDriveB 0700 root root
+    #supprimé            mkdir /storage/UsbDriveC 0700 root root
+    #supprimé            mkdir /storage/UsbDriveD 0700 root root
+    #supprimé            mkdir /storage/UsbDriveE 0700 root root
+    #supprimé            mkdir /storage/UsbDriveF 0700 root root
+
+    ##########Ajout debut  
+on fs
+    wait /dev/block/platform/soc.0/${ro.boot.bootdevice}
+    symlink /dev/block/platform/soc.0/${ro.boot.bootdevice} /dev/block/bootdevice
+    
+    mount_all fstab.qcom
+    swapon_all fstab.qcom
+
+    restorecon_recursive /efs
+
+    write /sys/kernel/boot_adsp/boot 1
+    setprop qcom.audio.init complete
+
+    # Kickstart the Wireless subsystem
+    write /dev/wcnss_wlan 1
+    
+    # Adaptive LMK
+    write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
+    write /sys/module/lowmemorykiller/parameters/vmpressure_file_min 53059 
+    
+on post-fs    
+    # Allow writing to the kernel trace log.
+    chmod 0222 /sys/kernel/debug/tracing/trace_marker    
+
+on post-fs-data
+    mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
+    chown bluetooth bluetooth /persist/.bt_nv.bin
+    
+    # Create the directories used by the Wireless subsystem
+    mkdir /data/vendor/wifi 0770 wifi wifi
+    mkdir /data/vendor/wifi/wpa 0770 wifi wifi
+    mkdir /data/vendor/wifi/wpa/sockets 0770 wifi wifi    
+    
+    # Create the directories used by CnE subsystem
+    mkdir /data/connectivity 0771 system system
+    chown system system /data/connectivity
+
+    # For WIFI TRP/TIS
+    chown system root /data/.psm.info
+    chmod 0664 /data/.psm.info
+
+    # For WIFI Antena Selection
+    chown system root /data/.ant.info
+    chmod 0664 /data/.ant.info
+
+    # For WIFI Version
+    write /data/.wifiver.info 0
+    chown system root /data/.wifiver.info
+    chmod 0664 /data/.wifiver.info
+
+    # For WIFI Cert
+    chmod 0664 /data/.bustxglom.info
+    chmod 0664 /data/.roamoff.info
+    chmod 0664 /data/.frameburst.info
+    chmod 0664 /data/.txbf.info
+
+    # For WIFI MAC address
+    mkdir /efs/wifi 0775 radio system
+    chown system wifi /efs/wifi/.mac.info
+    chmod 0664 /efs/wifi/.mac.info
+    restorecon /efs/wifi/.mac.info
+    chmod 0664 /efs/wifi/.mac.cob
+
+    # Create directory used by audio subsystem
+    mkdir /data/misc/audio 0770 audio audio
+    
+    # Create directory for audio delta files
+    mkdir /data/misc/audio/acdbdata 0770 media audio
+    mkdir /data/misc/audio/acdbdata/delta 0770 media audio   
+
+    # Create directory used by radio subsystem
+    mkdir /data/radio 0770 radio radio
+
+    # Create directory used by the DASH client
+    mkdir /data/misc/dash 0770 media audio
+
+    # Mounting of persist is moved to 'on emmc-fs' and 'on fs' sections
+    # We chown/chmod /persist again so because mount is run as root + defaults
+    chown system system /persist
+    chmod 0771 /persist
+    
+    chmod 0664 /sys/devices/platform/msm_sdcc.1/polling
+    chmod 0664 /sys/devices/platform/msm_sdcc.2/polling
+    chmod 0664 /sys/devices/platform/msm_sdcc.3/polling
+    chmod 0664 /sys/devices/platform/msm_sdcc.4/polling
+
+    # Chown polling nodes as needed from UI running on system server
+    chown system system /sys/devices/platform/msm_sdcc.1/polling
+    chown system system /sys/devices/platform/msm_sdcc.2/polling
+    chown system system /sys/devices/platform/msm_sdcc.3/polling
+    chown system system /sys/devices/platform/msm_sdcc.4/polling
+
+    #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
+    mkdir /data/system 0775 system system
+    
+    # Create directory from IMS services
+    mkdir /data/shared 0755
+    chown system system /data/shared
+
+    # Create directory for FOTA
+    mkdir /data/fota 0771
+    chown system system /data/fota
+
+    # Create /data/time folder for time-services
+    mkdir /data/time/ 0700 system system
+
+    mkdir /data/bluetooth 0770 bluetooth bluetooth
+    # Enable the setgid bit on the directory
+    chmod 2770 /data/bluetooth
+
+    mkdir /data/audio/ 0770 media audio
+    # Enable the setgid bit on the directory
+    chmod 2770 /data/audio
+
+    # Gpio DVS
+    chown radio system /sys/class/secgpio_check/secgpio_check_all/secgpio_ctrl
+
+    # Create thombstones folders
+    mkdir /data/tombstones 0771 system system
+    mkdir /tombstones/modem 0771 system system
+    mkdir /tombstones/lpass 0771 system system
+    mkdir /tombstones/wcnss 0771 system system
+    mkdir /tombstones/dsps 0771 system system
+    mkdir /tombstones/mdm 0771 system system
+
+    # Create directory for ril data
+    mkdir /data/misc/radio 0775 radio radio
+    mkdir /data/misc/radio/hatp 0775 radio system
+
+    # DRM and related files in EFS
+    mkdir /efs/drm 0774 drm system
+    mkdir /efs/drm/sdrm 0774 drm system
+    mkdir /efs/drm/sdrm/data_agent 0774 drm system
+    restorecon /efs/drm
+    restorecon /efs/drm/sdrm
+    restorecon /efs/drm/sdrm/data_agent
+
+    # DivX DRM
+    mkdir /efs/.files 0775
+    mkdir /efs/.files/.dx1 0775
+    mkdir /efs/.files/.dm33 0775
+    mkdir /efs/.files/.mp301 0775
+    chown media system /efs/.files/.dx1
+    chown media system /efs/.files/.dm33
+    chown media system /efs/.files/.mp301
+    chmod 0775 /efs/.files/.dx1
+    chmod 0775 /efs/.files/.dm33
+    chmod 0775 /efs/.files/.mp301
+    
+    # h2k permission
+    chmod 0644 /efs/redata.bin
+    chown radio radio /efs/h2k.dat
+    chmod 0644 /efs/h2k.dat    
+    
+    # DRK permission
+    mkdir /efs/prov 0770 radio system
+    chown radio system /efs/prov/libdevkm.lock
+    chmod 0660 /efs/prov/libdevkm.lock
+
+    #OTG Test
+    chown system radio /sys/class/host_notify/usb_otg/booster
+    chmod 0660 /sys/class/host_notify/usb_otg/booster
+    
+    # wifi
+    mkdir /efs/wifi 0775 system system
+    
+    # Permission for fast dormacy for RIL
+    chown system radio /sys/devices/virtual/sec/bamdmux/waketime
+    
+    # ICD
+    exec check_icd
+    chown system system /dev/icd
+    chmod 0644 /dev/icd
+    chown system system /dev/icdr
+    chmod 0644 /dev/icdr
+    chown system system /dev/tzic
+
+    # Symlink to bugreport storage location
+    symlink /data/data/com.android.shell/files/bugreports /data/bugreports
+    
+    # Create perfd deamon related dirs
+    mkdir /data/misc/perfd 0755 root system
+    chmod 2755 /data/misc/perfd
+    mkdir /data/system/perfd 0770 root system
+    chmod 2770 /data/system/perfd      
+
+    # Remove symlinks to avoid issues with migrate after nandroid restores
+    # Will be recreated at end of boot
+    rm /data/data/com.android.providers.telephony/databases
+    rm /data/data/com.android.providers.telephony/shared_prefs
+
+    # Remove the current apn as sometimes after a reboot it cant connect to 3g
+    # It will be regenerated by the system
+    rmdir /data/user_de/0/com.android.providers.telephony/shared_prefs
+
+    setprop vold.post_fs_data_done 1
+
+    ##########Ajout fin
+
+on early-boot
+    # set RLIMIT_MEMLOCK to 64MB
+    setrlimit 8 67108864 67108864
+	# Allow subsystem (modem etc) debugging
+    write /sys/module/subsystem_restart/parameters/enable_debug ${persist.sys.ssr.enable_debug}
+    #supprimé            write /sys/kernel/boot_adsp/boot 1
+    # exec /system/bin/sh /init.qcom.early_boot.sh ${ro.board.platform}
+    # exec /system/bin/sh /init.qcom.syspart_fixup.sh ${ro.board.platform} ${ro.serialno}
+
+on boot
+
+    #supprimé            mount debugfs /sys/kernel/debug /sys/kernel/debug
+
+    #supprimé            chown bluetooth bluetooth /sys/module/bluetooth_power/parameters/power
+    #supprimé            chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
+    #supprimé            chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    #supprimé            chown bluetooth bluetooth /proc/bluetooth/sleep/proto
+    #supprimé            chown bluetooth bluetooth /sys/module/hci_uart/parameters/ath_lpm
+    #supprimé            chown bluetooth bluetooth /sys/module/hci_uart/parameters/ath_btwrite
+    #supprimé            chown system system /sys/module/sco/parameters/disable_esco
+    #supprimé            chown bluetooth bluetooth /sys/module/hci_smd/parameters/hcismd_set
+    #supprimé            chmod 0660 /sys/module/bluetooth_power/parameters/power
+    #supprimé            chmod 0660 /sys/module/hci_smd/parameters/hcismd_set
+    #supprimé            chmod 0660 /sys/class/rfkill/rfkill0/state
+    #supprimé            chmod 0660 /proc/bluetooth/sleep/proto
+    #supprimé            chown bluetooth net_bt_stack /dev/ttyHS0
+    #supprimé            chmod 0660 /sys/module/hci_uart/parameters/ath_lpm
+    #supprimé            chmod 0660 /sys/module/hci_uart/parameters/ath_btwrite
+    #supprimé            chmod 0660 /dev/ttyHS0
+    #supprimé            chown bluetooth bluetooth /sys/devices/platform/msm_serial_hs.0/clock
+    #supprimé            chmod 0660 /sys/devices/platform/msm_serial_hs.0/clock
+
+    #supprimé            chmod 0660 /dev/ttyHS2
+    #supprimé            chown bluetooth bluetooth /dev/ttyHS2
+
+    # for BT MAC address
+    mkdir /efs/bluetooth 0775 radio system
+    setprop ro.bt.bdaddr_path "/efs/bluetooth/bt_addr" ###Ajout
+    chown bluetooth net_bt_stack ro.bt.bdaddr_path ###Ajout
+    chown radio net_bt_stack /efs/bluetooth/bt_addr ###Ajout
+    chmod 0755 /efs/bluetooth/bt_addr ###Ajout
+    restorecon_recursive /efs/bluetooth ###Ajout
+    # if already exist
+    chown radio system /efs/bluetooth # etait dans afyon stock seulement, effacer si pb
+    chmod 0775 /efs/bluetooth # etait dans afyon stock seulement, effacer si pb
+
+    #Audience ES705 UART
+    #supprimé            chmod 0660 /dev/ttyHS3
+    #supprimé            chown system system /dev/ttyHS3
+
+    #Create QMUX deamon socket area
+    mkdir /dev/socket/qmux_radio 0770 radio radio
+    chmod 2770 /dev/socket/qmux_radio
+    mkdir /dev/socket/qmux_audio 0770 media audio
+    chmod 2770 /dev/socket/qmux_audio
+    mkdir /dev/socket/qmux_bluetooth 0770 bluetooth bluetooth
+    chmod 2770 /dev/socket/qmux_bluetooth
+    mkdir /dev/socket/qmux_gps 0770 gps gps
+    chmod 2770 /dev/socket/qmux_gps
+
+    #supprimé            setprop wifi.interface wlan0
+
+    #supprimé            setprop ro.telephony.call_ring.multiple false
+	###############AJOUT DEBUT
+    # Allow QMUX daemon to assign port open wait time
+    chown radio radio /sys/devices/virtual/hsicctl/hsicctl0/modem_wait
+
+    # Modem requires this
+    chown root radio /proc/cmdline
+    chmod 0644 /proc/cmdline
+	###############AJOUT FIN
+
+    #Set SUID bit for usbhub
+    #supprimé           chmod 4755 /system/bin/usbhub
+    #supprimé           chmod 755 /system/bin/usbhub_init
+
+    #Remove SUID bit for iproute2 ip tool
+    chmod 0755 /system/bin/ip
+
+
+    #supprimé           chmod 0444 /sys/devices/platform/msm_hsusb/gadget/usb_state
+
+    #For bridgemgr daemon to inform the USB driver of the correct transport
+    chown radio radio /sys/class/android_usb/f_rmnet_smd_sdio/transport
+
+    # Allow RIL daemon to assign port open fd_wakelock
+    chown system radio /sys/devices/virtual/sec/mdm_hsic_pm/waketime ####ajout
+
+    #To allow interfaces to get v6 address when tethering is enabled
+    write /proc/sys/net/ipv6/conf/rmnet0/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet1/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet2/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet3/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet4/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet5/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet6/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet7/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio0/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio1/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio2/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio3/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio4/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio5/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio6/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_sdio7/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_usb0/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_usb1/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_usb2/accept_ra 2
+    write /proc/sys/net/ipv6/conf/rmnet_usb3/accept_ra 2
+
+    # To prevent out of order acknowledgements from making
+    # connection tracking to treat them as not belonging to
+    # the connection they belong to.
+    # Otherwise, a weird issue happens in which some long
+    # connections on high-throughput links get dropped when
+    # an ack packet comes out of order
+    write /proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal 1
+
+    # NFC local data and nfcee xml storage
+    #supprimé           mkdir /data/nfc 0770 nfc nfc
+    #supprimé           mkdir /data/nfc/param 0770 nfc nfc
+
+    # Set the console loglevel to < KERN_INFO
+    # Set the default message loglevel to KERN_INFO
+    # modified by SEC, SEC use a loglevel path with another way.
+    # write /proc/sys/kernel/printk "6 6 1 7"
+
+# msm specific files that need to be created on /data
+    #supprimé           on post-fs-data
+    # we will remap this as /mnt/sdcard with the sdcard fuse tool
+    #supprimé           mkdir /data/media 0770 media_rw media_rw
+    #supprimé           chown media_rw media_rw /data/media
+
+    
+    #supprimé           mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
+
+    # Create the directories used by the Wireless subsystem
+    #supprimé           mkdir /data/misc/wifi 0770 wifi system
+    #supprimé           mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    #supprimé           mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
+    #supprimé           mkdir /data/misc/dhcp 0775 dhcp dhcp
+    #supprimé           chown dhcp dhcp /data/misc/dhcp
+
+    # Create the directories used by CnE subsystem
+    #supprimé           mkdir /data/connectivity 0771 system system
+    #supprimé           chown system system /data/connectivity
+
+    # for WIFI TRP/TIS
+    #supprimé           chown system root /data/.psm.info
+    #supprimé           chmod 0664 /data/.psm.info
+
+    # for WIFI Antena Selection
+    #supprimé           chown system root /data/.ant.info
+    #supprimé           chmod 0664 /data/.ant.info
+
+    # for WIFI Version
+    #supprimé           write /data/.wifiver.info 0
+    #supprimé           chown system root /data/.wifiver.info
+    #supprimé           chmod 0664 /data/.wifiver.info
+
+    # for WIFI Cert
+    #supprimé           chmod 0664 /data/.bustxglom.info
+    #supprimé           chmod 0664 /data/.roamoff.info
+    #supprimé           chmod 0664 /data/.frameburst.info
+    #supprimé           chmod 0664 /data/.txbf.info
+
+    # for WIFI MAC address
+    #supprimé           mkdir /efs/wifi 0775 radio system
+    #supprimé           chown system wifi /efs/wifi/.mac.info
+    #supprimé           chmod 0660 /efs/wifi/.mac.info
+    chmod 0660 /efs/wifi/.mac.cob
+
+    # Create directory used by audio subsystem
+    #supprimé           mkdir /data/misc/audio 0770 audio audio
+
+    # Mounting of persist is moved to 'on emmc-fs' and 'on fs' sections
+    # We chown/chmod /persist again so because mount is run as root + defaults
+    #supprimé           chown system system /persist
+    #supprimé           chmod 0771 /persist
+    #supprimé           chmod 0664 /sys/devices/platform/msm_sdcc.1/polling
+    #supprimé           chmod 0664 /sys/devices/platform/msm_sdcc.2/polling
+    #supprimé           chmod 0664 /sys/devices/platform/msm_sdcc.3/polling
+    #supprimé           chmod 0664 /sys/devices/platform/msm_sdcc.4/polling
+
+    # Chown polling nodes as needed from UI running on system server
+    #supprimé           chown system system /sys/devices/platform/msm_sdcc.1/polling
+    #supprimé           chown system system /sys/devices/platform/msm_sdcc.2/polling
+    #supprimé           chown system system /sys/devices/platform/msm_sdcc.3/polling
+    #supprimé           chown system system /sys/devices/platform/msm_sdcc.4/polling
+
+    #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
+    #supprimé           mkdir /data/system 0775 system system
+    #symlink /data/misc/wifi/wpa_supplicant /data/system/wpa_supplicant
+
+    #Create directories for gpsone_daemon services
+    #supprimé           mkdir /data/misc/gpsone_d 0770 system gps
+
+    #Create directories for QuIPS
+    #supprimé           mkdir /data/misc/quipc 0770 gps system
+
+    #Create directories for Location services
+    #supprimé           mkdir /data/misc/location 0770 gps gps
+    #supprimé           mkdir /data/misc/location/mq 0770 gps gps
+    #supprimé           mkdir /data/misc/location/xtwifi 0770 gps gps
+
+    #Create directory from IMS services
+    #supprimé           mkdir /data/shared 0755
+    #supprimé           chown system system /data/shared
+
+    #Create directory for FOTA
+    #supprimé           mkdir /data/fota 0771
+    #supprimé           chown system system /data/fota
+
+    #Create directory for hostapd
+    #supprimé           mkdir /data/hostapd 0770 system wifi
+
+    # Create /data/time folder for time-services
+    #supprimé           mkdir /data/time/ 0700 system system
+
+    #supprimé           mkdir /data/audio/ 0770 media audio
+
+    #supprimé           setprop vold.post_fs_data_done 1
+
+    #Create a folder for SRS to be able to create a usercfg file
+    #supprimé           mkdir /data/data/media 0770 media media
+
+    # Gpio DVS
+    #supprimé           chown radio system /sys/class/secgpio_check/secgpio_check_all/secgpio_ctrl
+
+# Export GPIO56 for fusion targets to enable/disable hub
+    #supprimé           service usbhub_init /system/bin/usbhub_init
+    #supprimé           class late_start
+    #supprimé           user root
+    #supprimé           disabled
+    #supprimé           oneshot
+
+    #supprimé           on property:persist.radio.atfwd.start=false
+    #supprimé               stop atfwd
+
+    #supprimé           on property:ro.board.platform=msm7630_fusion
+    #supprimé               start usbhub_init
+
+##########################ajout debut
+
+    # Flash storage isn't a good entropy source, and only causes locking
+    # overhead in the kernel. Turn it off.
+    write /sys/block/mmcblk0/queue/add_random 0
+
+    # MUIC
+    chown system radio /sys/class/sec/switch/adc
+    chown system radio /sys/class/sec/switch/reset_switch
+    chown radio system /sys/class/sec/switch/usb_state
+
+    chown radio system /sys/devices/system/cpu/kernel_max
+    chmod 664 /sys/devices/system/cpu/kernel_max
+
+    chown radio system /sys/class/kgsl/kgsl-3d0/max_pwrlevel
+    chmod 664  /sys/class/kgsl/kgsl-3d0/max_pwrlevel
+    chown radio system /sys/class/kgsl/kgsl-3d0/min_pwrlevel
+    chmod 664  /sys/class/kgsl/kgsl-3d0/min_pwrlevel
+    chown radio system /sys/class/kgsl/kgsl-3d0/gpu_available_frequencies
+    chmod 664  /sys/class/kgsl/kgsl-3d0/gpu_available_frequencies
+
+    chown radio system /sys/class/devfreq/qcom,cpubw.68/available_frequencies
+    chmod 664 /sys/class/devfreq/qcom,cpubw.68/available_frequencies
+    chown radio system /sys/class/devfreq/qcom,cpubw.68/available_governors
+    chmod 664 /sys/class/devfreq/qcom,cpubw.68/available_governors
+    chown radio system /sys/class/devfreq/qcom,cpubw.68/governor
+    chmod 664 /sys/class/devfreq/qcom,cpubw.68/governor
+    chown radio system /sys/class/devfreq/qcom,cpubw.68/max_freq
+    chmod 664 /sys/class/devfreq/qcom,cpubw.68/max_freq
+    chown radio system /sys/class/devfreq/qcom,cpubw.68/min_freq
+    chmod 664 /sys/class/devfreq/qcom,cpubw.68/min_freq
+    
+    chown system system  /sys/devices/system/cpu/cpufreq/ondemand/sampling_early_factor
+    chmod 0664 /sys/devices/system/cpu/cpufreq/ondemand/sampling_early_factor        
+    chown system system  /sys/devices/system/cpu/cpufreq/ondemand/sampling_interim_factor
+    chmod 0664 /sys/devices/system/cpu/cpufreq/ondemand/sampling_interim_factor    
+
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/timer_rate
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_slack
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/timer_slack
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/target_loads
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/target_loads
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/boost
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/boost
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/boostpulse
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/boostpulse
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/input_boost
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/input_boost
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/boostpulse_duration
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/boostpulse_duration
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/io_is_busy
+    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/io_is_busy
+
+    # Assume SMP uses shared cpufreq policy for all CPUs
+    chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+
+    # Auto Brightness
+    chown system system /sys/class/backlight/panel/auto_brightness
+    chmod 0660 /sys/class/backlight/panel/auto_brightness
+
+    # LCD mdnie and panel work
+    chown system system /sys/class/mdnie/mdnie/negative
+    chown system media_rw /sys/class/mdnie/mdnie/accessibility
+
+    chown radio system /sys/class/lcd/panel/lcd_power
+    chown radio system /sys/class/lcd/panel/lcd_type
+    chown radio system /sys/class/lcd/panel/power_reduce
+    chown radio system /sys/class/lcd/panel/siop_enable
+
+    chown system system /sys/class/leds/keyboard-backlight/brightness
+    chown system system /sys/class/leds/lcd-backlight/brightness
+    chown system system /sys/class/leds/button-backlight/brightness
+
+    chown system system /sys/kernel/ipv4/tcp_wmem_min
+    chown system system /sys/kernel/ipv4/tcp_wmem_def
+    chown system system /sys/kernel/ipv4/tcp_wmem_max
+    chown system system /sys/kernel/ipv4/tcp_rmem_min
+    chown system system /sys/kernel/ipv4/tcp_rmem_def
+    chown system system /sys/kernel/ipv4/tcp_rmem_max
+
+    # Adjust YUV to RGB Conversion(CSC_Conversion)
+    chown system media_rw /sys/class/graphics/fb0/csc_cfg
+    chmod 0660 /sys/class/graphics/fb0/csc_cfg
+
+    # MDP idle notifier
+    chown system graphics /sys/class/graphics/fb0/idle_time
+    chmod 0664 /sys/class/graphics/fb0/idle_time
+
+     #OTG Test
+    chown system radio /sys/class/host_notify/usb_otg/booster
+    chmod 0660 /sys/class/host_notify/usb_otg/booster
+    
+    # Display color calibration
+    chown system system /sys/devices/virtual/graphics/fb0/rgb
+    chmod 0660 /sys/devices/virtual/graphics/fb0/rgb
+
+    # Essential node for usbservice
+    mkdir /dev/bus/ 755 root root
+    mkdir /dev/bus/usb 755 root root
+
+    # Permissions for Camera
+    chown root system /sys/class/camera/rear/rear_camantibanding
+    chown system radio /sys/class/camera/rear/rear_camfw
+    chown system radio /sys/class/camera/rear/rear_camfw_full
+    chown system radio /sys/class/camera/rear/rear_camfw_load
+    chown system radio /sys/class/camera/rear/rear_camtype
+    chown system radio /sys/class/camera/rear/rear_corever
+    chown system radio /sys/class/camera/rear/rear_companionfw_full
+    chown system radio /sys/class/camera/rear/rear_calcheck
+    chown system radio /sys/class/camera/rear/rear_fwcheck
+    chown system radio /sys/class/camera/rear/isp_core
+    chown system radio /sys/class/camera/flash/rear_flash
+    chown system radio /sys/class/camera/front/front_camfw
+    chown system radio /sys/class/camera/front/front_camtype
+    
+    #OTG Test
+    chown system radio /sys/class/host_notify/usb_otg/booster
+    chmod 0660 /sys/class/host_notify/usb_otg/booster    
+
+    # Permissions for SSRM
+    chmod 0664 /sys/devices/platform/sec-thermistor/temperature
+    chmod 0664 /sys/class/power_supply/battery/siop_level
+    chmod 0664 /sys/class/power_supply/battery/test_charge_current
+    chown radio system /sys/devices/platform/sec-thermistor/temperature
+    chown radio system /sys/class/power_supply/battery/siop_level
+    chown radio system /sys/class/power_supply/battery/test_charge_current
+
+    # Permissions for Charging
+    chown system radio /sys/class/power_supply/battery/batt_reset_soc
+    chown system radio /sys/class/power_supply/battery/update
+    chown system radio /sys/class/power_supply/battery/factory_mode
+    chown system radio /sys/class/power_supply/battery/batt_slate_mode
+    chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/call
+    chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/video
+    chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/music
+    chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/browser
+    chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/hotspot
+    chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/camera
+    chown system radio /sys/class/power_supply/battery/talk_wcdma
+    chown system radio /sys/class/power_supply/battery/talk_gsm
+    chown system radio /sys/class/power_supply/battery/call
+    chown system radio /sys/class/power_supply/battery/data_call
+    chown system radio /sys/class/power_supply/battery/gps
+    chown system radio /sys/class/power_supply/battery/wifi
+    chown system radio /sys/class/power_supply/battery/lte
+    chown system radio /sys/class/power_supply/battery/wc_enable
+    chown system radio /sys/class/power_supply/battery/lcd
+
+    # Permission for fast dormancy for RIL
+    chown system radio /sys/devices/virtual/sec/bamdmux/waketime
+    #chmod 777 /sys/devices/virtual/sec/bamdmux/waketime
+
+    # Permissions for gpio_keys
+    chown system radio /sys/class/sec/sec_key/wakeup_keys
+    write /sys/class/sec/sec_key/wakeup_keys 116,172
+    
+    # HDCP 2.x
+    mkdir /data/system/hdcp2 0775 system system
+
+    # h2k permission
+    chown radio system /efs/redata.bin
+    chmod 0644 /efs/h2k.dat
+    mkdir /data/misc/radio/hatp 0775 radio system    
+
+    # Permission for HALL IC
+    chown system radio /sys/class/sec/sec_key/hall_detect
+
+    # Vibetonz
+    chmod 0660 /dev/tspdrv
+    chown vibe vibe /dev/tspdrv
+
+    # Vibrator
+    chmod 0644 /sys/class/timed_output/vibrator/pwm_value
+    chown system system /sys/class/timed_output/vibrator/pwm_value
+    chown system system /sys/class/timed_output/vibrator/enable
+
+    # Permissions for TSP
+    chown system system /sys/class/sec/tsp/cmd
+    chown system system /sys/class/sec/tsp/input/enabled
+    chown system system /sys/class/input/input0/enabled
+    chown system system /sys/class/input/input1/enabled
+    chown system system /sys/class/input/input2/enabled
+    chown system system /sys/class/input/input3/enabled
+    chmod 0664 /sys/class/sec/tsp/cmd
+    chmod 0660 /sys/class/sec/tsp/input/enabled
+    chmod 0664 /sys/class/input/input0/enabled
+    chmod 0664 /sys/class/input/input1/enabled
+    chmod 0664 /sys/class/input/input2/enabled
+    chmod 0664 /sys/class/input/input3/enabled
+
+    # Permission for touchkey
+    chown system system /sys/class/sec/sec_touchkey/keypad_enable
+    chown system system /sys/class/sec/sec_touchkey/touchkey_brightness
+    chown system system /sys/class/sec/sec_touchkey/touchkey_menu
+    chown system system /sys/class/sec/sec_touchkey/touchkey_back
+    chown system system /sys/class/sec/sec_touchkey/touch_version
+    chown system system /sys/class/sec/sec_touchkey/touchkey_firm_version_panel
+    chown system system /sys/class/sec/sec_touchkey/touchkey_firm_version_phone
+    chown system system /sys/class/sec/sec_touchkey/touchkey_firm_update_status
+    chown system system /sys/class/sec/sec_touchkey/touchkey_firm_update
+    chown system system /sys/class/sec/sec_touchkey/touch_sensitivity
+    chown system system /sys/class/sec/sec_touchkey/touchkey_threshold
+    chown system system /sys/devices/virtual/sec/sec_touchkey/brightness
+    chmod 0664 /sys/class/sec/sec_touchkey/keypad_enable
+    chmod 0664 /sys/class/sec/sec_touchkey/touchkey_brightness
+    chmod 0664 /sys/class/sec/sec_touchkey/touchkey_menu
+    chmod 0664 /sys/class/sec/sec_touchkey/touchkey_back
+    chmod 0664 /sys/class/sec/sec_touchkey/touch_version
+    chmod 0664 /sys/class/sec/sec_touchkey/touchkey_firm_version_panel
+    chmod 0664 /sys/class/sec/sec_touchkey/touchkey_firm_version_phone
+    chmod 0664 /sys/class/sec/sec_touchkey/touchkey_firm_update_status
+    chmod 0664 /sys/class/sec/sec_touchkey/touchkey_firm_update
+    chmod 0664 /sys/class/sec/sec_touchkey/touch_sensitivity
+    chmod 0664 /sys/class/sec/sec_touchkey/touchkey_threshold
+    chmod 0664 /sys/devices/virtual/sec/sec_touchkey/brightness
+    restorecon /sys/class/sec/sec_touchkey/keypad_enable
+
+    # Assign TCP buffer thresholds to be ceiling value of technology maximums
+    # Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  8388608
+    write /proc/sys/net/core/wmem_max  8388608
+
+    # Wifi firmware reload path
+    chmod 0660 /sys/module/wlan/parameters/fwpath
+    chown wifi wifi /sys/module/wlan/parameters/fwpath
+
+    # Mark wifi driver as unloaded - "ok" indicates loaded
+    setprop wlan.driver.status not_ok
+
+on property:dev.bootcomplete=1
+    setprop sys.io.scheduler "bfq"
+
+    # Symlink directories to access telephony.db and preferred-apn.xml required by libsec-ril
+    symlink /data/user_de/0/com.android.providers.telephony/databases /data/data/com.android.providers.telephony/databases
+    symlink /data/user_de/0/com.android.providers.telephony/shared_prefs /data/data/com.android.providers.telephony/shared_prefs
+    restorecon /data/data/com.android.providers.telephony/databases
+    restorecon /data/data/com.android.providers.telephony/shared_pref
+    
+# Services begin here
+
+service adsprpcd /vendor/bin/adsprpcd
+    class main
+    user media
+    group media
+
+service charger /charger
+    class charger
+    critical
+    seclabel u:r:healthd:s0
+    
+service ds_fmc_appd /vendor/bin/ds_fmc_appd -p "rmnet0" -D
+    class late_start
+    user root
+    group radio wifi inet
+    disabled
+    oneshot
+
+on property:persist.data.ds_fmc_app.mode=1
+    start ds_fmc_appd
+
+service hciattach /vendor/bin/init.qcom.bt.sh
+    class late_start
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    seclabel u:r:bluetooth_loader:s0
+    oneshot
+
+on property:vendor.bluetooth.hciattach=true
+    start hciattach
+
+on property:vendor.bluetooth.hciattach=false
+    setprop vendor.bluetooth.status off
+
+service irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
+    class main
+    user root
+    oneshot
+
+service mpdecision /vendor/bin/mpdecision --avg_comp
+    class main
+    user root
+    group root readproc
+    disabled
+
+service qcamerasvr /vendor/bin/mm-qcamera-daemon
+    class main
+    user camera
+    group camera system inet input graphics bluetooth
+
+service qmuxd /vendor/bin/qmuxd
+    class core
+    user radio
+    group radio audio bluetooth gps diag oem_2950 log
+
+service qseecomd /vendor/bin/qseecomd
+    class core
+    user root
+    group root
+
+service rfs_access /vendor/bin/rfs_access
+    class core
+    user system
+    group system net_raw
+
+service rmt_storage /vendor/bin/rmt_storage
+    class core
+    user root
+    group system wakelock
+    shutdown critical
+    ioprio rt 0
+    
+service thermal-engine /vendor/bin/thermal-engine -c /vendor/etc/thermal-engine-8226.conf
+   class main
+   user root
+   socket thermal-send-client stream 0666 system system
+   socket thermal-recv-client stream 0660 system system
+   socket thermal-recv-passive-client stream 0666 system system
+   group root   
+
+service time_daemon /vendor/bin/time_daemon
+    capabilities SYS_TIME
+    class late_start
+    user system
+    group net_raw
+
+service wcnss-service /system/bin/wcnss_service
+    class late_start
+    user system
+    group system wifi oem_2950 diag radio
+    oneshot
+
+# WPA
+service wpa_supplicant /vendor/bin/hw/wpa_supplicant \
+    -O/data/vendor/wifi/wpa/sockets -puse_p2p_group_interface=1 \
+    -g@android:wpa_wlan0
+    interface android.hardware.wifi.supplicant@1.0::ISupplicant default
+    interface android.hardware.wifi.supplicant@1.1::ISupplicant default    
+    #   we will start as root and wpa_supplicant will switch to user wifi
+    #   after setting up the capabilities required for WEXT
+    #   user wifi
+    #   group wifi inet keystore
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+##########################ajout fin
+
+
+on property:init.svc.wpa_supplicant=stopped
+    stop dhcpcd
+
+service dhcpcd_wlan0 /system/bin/dhcpcd -ABKLG  ######Ajout
+
+    #supprimé            on property:bluetooth.isEnabled=true
+    #supprimé                start btwlancoex
+    #supprimé                write /sys/class/bluetooth/hci0/idle_timeout 7000
+
+    #supprimé            on property:bluetooth.sap.status=running
+    #supprimé                start bt-sap
+
+    #supprimé            on property:bluetooth.sap.status=stopped
+    #supprimé                stop bt-sap
+
+    #supprimé            on property:bluetooth.dun.status=running
+    #supprimé                start bt-dun
+
+    #supprimé            on property:bluetooth.dun.status=stopped
+    #supprimé                stop bt-dun
+
+    #supprimé            on property:ro.bluetooth.ftm_enabled=true
+    #supprimé                start ftmd
+
+    #supprimé            service qcom-c_core-sh /system/bin/sh /init.qcom.class_core.sh
+    #supprimé                class core
+    #supprimé                user root
+    #supprimé                oneshot
+
+    #supprimé            service qcom-ril-sh /system/bin/sh /init.ril.sh
+    #supprimé                class main
+    #supprimé                user root
+    #supprimé                disabled
+    #supprimé                oneshot
+
+    #supprimé            service ril-qmi /system/bin/sh /init.qcom.ril.sh
+    #supprimé                class main
+    #supprimé                user root
+    #supprimé                oneshot
+
+    #supprimé            on property:vold.decrypt=trigger_restart_framework
+    #supprimé                start qcom-ril-sh
+    #supprimé                start config_bluetooth
+
+    #supprimé            on property:persist.env.fastdorm.enabled=true
+    #supprimé                setprop persist.radio.data_no_toggle 1
+
+    #supprimé            service cnd /system/bin/cnd
+    #supprimé                class late_start
+    #supprimé                socket cnd stream 660 root inet
+
+    #supprimé            service irsc_util /system/bin/logwrapper /system/bin/irsc_util "/etc/sec_config"
+    #supprimé                class main
+    #supprimé                user root
+    #supprimé                oneshot
+
+    #supprimé            service rmt_storage /system/bin/rmt_storage
+    #supprimé                class core
+    #supprimé                user root
+    #supprimé                disabled
+
+    #supprimé            on property:ro.boot.emmc=true
+    #supprimé                start rmt_storage
+
+    #supprimé            service rfs_access /system/bin/rfs_access
+    #supprimé               class core
+    #supprimé               user system
+    #supprimé               group system net_raw
+
+    #supprimé            on property:ro.boot.emmc=true
+    #supprimé                start rfs_access
+
+    #supprimé            on property:bluetooth.start_hci=true
+    #supprimé                start start_hci_filter
+
+    #supprimé            on property:bluetooth.start_hci=false
+    #supprimé                stop start_hci_filter
+
+    #supprimé            service start_hci_filter /system/bin/wcnss_filter
+    #supprimé                class late_start
+    #supprimé                user bluetooth
+    #supprimé                group bluetooth
+    #supprimé                disabled
+
+    #supprimé            service config_bluetooth /system/bin/sh /system/etc/init.qcom.bt.sh "onboot"
+    #supprimé                class core
+    #supprimé                user root
+    #supprimé                oneshot
+
+#supprimé	service hciattach /system/bin/sh /system/etc/init.qcom.bt.sh
+#supprimé	    class late_start
+#supprimé	    user bluetooth
+#supprimé	    group bluetooth net_bt_admin net_bt_stack # pas de net_bt_stack dans s3ve3gjv
+#supprimé	    disabled
+#supprimé	    oneshot
+
+#supprimé	on property:bluetooth.hciattach=true
+#supprimé	    start hciattach
+
+#supprimé	on property:bluetooth.hciattach=false
+#supprimé	    setprop bluetooth.status off
+
+#supprimé	service hciattach_ath3k /system/bin/sh /system/etc/init.ath3k.bt.sh
+#supprimé	     class late_start
+#supprimé	     user bluetooth
+#supprimé	     group system bluetooth net_bt_admin misc
+#supprimé	     disabled
+#supprimé	     oneshot
+
+#supprimé	service bt-dun /system/bin/dun-server /dev/smd7 /dev/rfcomm0
+#supprimé	    class late_start
+#supprimé	    user bluetooth
+#supprimé	    group bluetooth net_bt_admin inet
+#supprimé	    disabled
+#supprimé	    oneshot
+
+#supprimé	service bt-sap /system/bin/sapd 15
+#supprimé	    user bluetooth
+#supprimé	    group bluetooth net_bt_admin
+#supprimé	    class late_start
+#supprimé	    disabled
+#supprimé	    oneshot
+
+#supprimé	service ftmd /system/bin/logwrapper /system/bin/ftmdaemon
+#supprimé	    class late_start
+#supprimé	    user root
+#supprimé	    group bluetooth net_bt_admin misc net_bt_stack qcom_diag
+#supprimé	    disabled
+#supprimé	    oneshot
+
+#supprimé	service bridgemgrd /system/bin/bridgemgrd
+#supprimé	    class late_start
+#supprimé	    user radio
+#supprimé	    group radio qcom_diag
+#supprimé	    disabled
+
+#supprimé	service port-bridge /system/bin/port-bridge /dev/smd0 /dev/ttyGS0
+#supprimé	    class late_start
+#supprimé	    user system
+#supprimé	    group system inet
+#supprimé	    disabled
+
+#supprimé	service qmiproxy /system/bin/qmiproxy
+#supprimé	    class main
+#supprimé	    user radio
+#supprimé	    group radio qcom_diag
+#supprimé	    disabled
+
+# QMUX must be in multiple groups to support external process connections
+#supprimé	service qmuxd /system/bin/qmuxd
+#supprimé	    class main
+#supprimé	    user radio
+#supprimé	    group radio audio bluetooth gps qcom_diag
+#supprimé	    disabled
+
+#supprimé	service netmgrd /system/bin/netmgrd
+#supprimé	    class main
+#supprimé	    disabled
+
+#supprimé	service sensors /system/bin/sensors.qcom
+#supprimé	    class late_start
+#supprimé	    user root
+#supprimé	    group root
+#supprimé	    disabled
+
+service factory_adsp /system/bin/factory.adsp # dans afyon seulement
+    class late_start  # dans afyon seulement
+    user root  # dans afyon seulement
+    group root  # dans afyon seulement
+    disabled  # dans afyon seulement
+#supprimé	on property:ro.use_data_netmgrd=false
+    # netmgr not supported on specific target
+#supprimé	    stop netmgrd
+
+# Adjust socket buffer to enlarge TCP receive window for high bandwidth
+# but only if ro.data.large_tcp_window_size property is set.
+#supprimé	on property:ro.data.large_tcp_window_size=true
+#supprimé	    write /proc/sys/net/ipv4/tcp_adv_win_scale  2
+
+#supprimé	service btwlancoex /system/bin/sh /system/etc/init.qcom.coex.sh
+#supprimé	    class late_start
+#supprimé	    user bluetooth
+#supprimé	    group bluetooth net_bt_admin inet net_admin net_raw
+#supprimé	    disabled
+#supprimé	    oneshot
+
+#supprimé	service amp_init /system/bin/amploader -i
+#supprimé	    class late_start
+#supprimé	   user root
+#supprimé	    disabled
+#supprimé	    oneshot
+
+#supprimé	service amp_load /system/bin/amploader -l 7000
+#supprimé	    class late_start
+#supprimé	    user root
+#supprimé	    disabled
+#supprimé	    oneshot
+
+#supprimé	service amp_unload /system/bin/amploader -u
+#supprimé	    class late_start
+#supprimé	    user root
+#supprimé	    disabled
+#supprimé	    oneshot
+#supprimé	service p2p_supplicant /system/bin/wpa_supplicant \
+#supprimé	    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
+#supprimé	    -I/system/etc/wifi/wpa_supplicant_overlay.conf -O/data/misc/wifi/sockets -N \
+#supprimé	    -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf \
+#supprimé	    -I/system/etc/wifi/p2p_supplicant_overlay.conf \
+#supprimé	    -puse_p2p_group_interface=1 -puse_multi_chan_concurrent=1 \
+#supprimé	    -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
+    #   we will start as root and wpa_supplicant will switch to user wifi
+    #   after setting up the capabilities required for WEXT
+    #   user wifi
+    #   group wifi inet keystore
+#supprimé	    class main
+#supprimé	    socket wpa_wlan0 dgram 660 wifi wifi
+#supprimé	    disabled
+#supprimé	    oneshot
+
+#supprimé	service wpa_supplicant /system/bin/wpa_supplicant -g@android:wpa_wlan0 \
+#supprimé	    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf -e/data/misc/wifi/entropy.bin
+    #   we will start as root and wpa_supplicant will switch to user wifi
+    #   after setting up the capabilities required for WEXT
+    #   user wifi
+    #   group wifi inet keystore
+#supprimé	    class main
+#supprimé	    socket wpa_wlan0 dgram 660 wifi wifi
+#supprimé	    disabled
+#supprimé	    oneshot
+
+#supprimé	service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
+#supprimé	    class late_start
+#supprimé	    disabled
+#supprimé	    oneshot
+
+#supprimé	service dhcpcd_ibss /system/bin/dhcpcd -BKM
+    class late_start
+    disabled
+    oneshot
+
+service dhcpcd_p2p /system/bin/dhcpcd -ABKLG
+    class late_start
+    disabled
+    oneshot
+
+service iprenew_wlan0 /system/bin/dhcpcd -n
+    class late_start
+    disabled
+    oneshot
+
+service iprenew_p2p /system/bin/dhcpcd -n
+    class late_start
+    disabled
+    oneshot
+
+service dhcpcd_bt-pan /system/bin/dhcpcd -BKLG
+    class late_start
+    disabled
+    oneshot
+
+service iprenew_bt-pan /system/bin/dhcpcd -n
+    class late_start
+    disabled
+    oneshot
+
+service dhcpcd_bnep0 /system/bin/dhcpcd -BKLG
+    disabled
+    oneshot
+
+service dhcpcd_bnep1 /system/bin/dhcpcd -BKLG
+    disabled
+    oneshot
+
+service dhcpcd_bnep2 /system/bin/dhcpcd -BKLG
+    disabled
+    oneshot
+
+service dhcpcd_bnep3 /system/bin/dhcpcd -BKLG
+    disabled
+    oneshot
+
+service dhcpcd_bnep4 /system/bin/dhcpcd -BKLG
+    disabled
+    oneshot
+
+########################AJOUT DEBUT
+
+# Limit to SoC reset (1) and independent SSR (3)
+on property:persist.sys.ssr.restart_level=1
+    write /sys/module/subsystem_restart/parameters/restart_level 1
+
+on property:persist.sys.ssr.restart_level=3
+    write /sys/module/subsystem_restart/parameters/restart_level 3 
+
+########################AJOUT FIN
+
+#for WiFi MFG(TestMode)
+#supprimé	    service mfgloader /system/bin/mfgloader
+#supprimé	        class main
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service wlandutservice /system/bin/wlandutservice
+#supprimé	        class main
+#supprimé	        user system
+#supprimé	        group wifi net_raw net_admin system inet
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service macloader /system/bin/macloader
+#supprimé	        class main
+#supprimé	        oneshot
+
+#supprimé	    on property:init.svc.macloader=stopped
+#supprimé	        chown system root /data/.cid.info
+#supprimé	        chmod 0664 /data/.cid.info
+#supprimé	        chown system root /data/.rev
+#supprimé	        chmod 0664 /data/.rev
+# end of wifi
+
+#supprimé	    service sec-sh /system/bin/sh /system/etc/init.sec.boot.sh
+#supprimé	        class main
+#supprimé	        user root
+#supprimé	        oneshot
+
+#supprimé	    service olsrd /system/bin/olsrd -f /etc/wifi/olsrd.conf
+#supprimé	        class main
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    on property:init.svc.dhcpcd_ibss=running
+#supprimé	        start olsrd
+
+#supprimé	    service gpsone_daemon /system/bin/gpsone_daemon
+#supprimé	        class late_start
+#supprimé	        user gps
+#supprimé	        group gps inet net_raw
+#supprimé	        disabled
+
+#supprimé	    service quipc_igsn /system/bin/quipc_igsn
+#supprimé	        class late_start
+#supprimé	        user gps
+#supprimé	        group inet gps qcom_diag
+#supprimé	        disabled
+
+#supprimé	    service quipc_main /system/bin/quipc_main
+#supprimé	        class late_start
+#supprimé	        user gps
+#supprimé	        group gps net_admin wifi inet
+#supprimé	        disabled
+
+#supprimé	    service location_mq /system/bin/location-mq
+#supprimé	        class late_start
+#supprimé	        user gps
+#supprimé	        group gps
+#supprimé	        disabled
+
+#supprimé	    service xtwifi_inet /system/bin/xtwifi-inet-agent
+#supprimé	        class late_start
+#supprimé	        user gps
+#supprimé	        group inet gps
+#supprimé	        disabled
+
+#supprimé	    service xtwifi_client /system/bin/xtwifi-client
+#supprimé	        class late_start
+#supprimé	        user gps
+#supprimé	        group net_admin wifi inet gps
+#supprimé	        disabled
+
+#supprimé	    service lowi-server /system/bin/lowi-server
+#supprimé	        class late_start
+#supprimé	        user gps
+#supprimé	        group gps net_admin wifi inet
+#supprimé	        disabled
+
+#supprimé	    service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
+#supprimé	        class late_start
+#supprimé	        user root
+#supprimé	        group system fm_radio
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    on property:crypto.driver.load=1
+#supprimé	         insmod /system/lib/modules/qce.ko
+#supprimé	         insmod /system/lib/modules/qcedev.ko
+
+#supprimé	    on property:crypto.driver.load=0
+#supprimé	         exec /system/bin/rmmod qcedev.ko
+#supprimé	         exec /system/bin/rmmod qce.ko
+
+#supprimé	    service drmdiag /system/bin/drmdiagapp
+#supprimé	        class late_start
+#supprimé	         user root
+#supprimé	         disabled
+#supprimé	         oneshot
+
+#supprimé	    on property:drmdiag.load=1
+#supprimé	        start drmdiag
+
+#supprimé	    on property:drmdiag.load=0
+#supprimé	        stop drmdiag
+
+#supprimé	    service qcom-sh /system/bin/sh /init.qcom.sh
+#supprimé	        class late_start
+#supprimé	        user root
+#supprimé	        oneshot
+
+#supprimé	    service qcom-post-boot /system/bin/sh /system/etc/init.qcom.post_boot.sh
+#supprimé	        class late_start
+#supprimé	        user root
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service wifi-sdio-on /system/bin/sh /system/etc/init.qcom.sdio.sh
+#supprimé	        class late_start
+#supprimé	        group wifi inet
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service wifi-crda /system/bin/sh /system/etc/init.crda.sh
+#supprimé	       class late_start
+#supprimé	       user root
+#supprimé	       disabled
+#supprimé	       oneshot
+
+
+#supprimé	    on property:sys.boot_completed=1
+#supprimé	        start qcom-post-boot
+
+#supprimé	    service atfwd /system/bin/ATFWD-daemon
+#supprimé	        class late_start
+#supprimé	        user system
+#supprimé	        group system radio
+
+#service hostapd /system/bin/hostapd -dddd /data/hostapd/hostapd.conf
+#    class late_start
+#    user root
+#    group root
+#    oneshot
+#    disabled
+
+#supprimé	    service ds_fmc_appd /system/bin/ds_fmc_appd -p "rmnet0" -D
+#supprimé	        class late_start
+#supprimé	        group radio wifi inet
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    on property:persist.data.ds_fmc_app.mode=1
+#supprimé	        start ds_fmc_appd
+
+#service ims_regmanager /system/bin/exe-ims-regmanagerprocessnative
+#    class late_start
+#    group net_bt_admin inet radio wifi
+#    disabled
+
+#supprimé	    on property:persist.ims.regmanager.mode=1
+#supprimé	        start ims_regmanager
+
+#supprimé	    on property:ro.data.large_tcp_window_size=true
+    # Adjust socket buffer to enlarge TCP receive window for high bandwidth (e.g. DO-RevB)
+#supprimé	        write /proc/sys/net/ipv4/tcp_adv_win_scale  2
+
+#supprimé	    service battery_monitor /system/bin/battery_monitor
+#supprimé	        user system
+#supprimé	        group system
+#supprimé	        disabled
+
+#service ril-daemon1 /system/bin/rild -c 1
+#    class main
+#    socket rild1 stream 660 root radio
+#    socket rild-debug1 stream 660 radio system
+#    user root
+#    disabled
+#    group radio cache inet misc audio sdcard_r sdcard_rw diag qcom_diag log
+
+#service ril-daemon2 /system/bin/rild -c 2
+#    class main
+#    socket rild2 stream 660 root radio
+#    socket rild-debug2 stream 660 radio system
+#    user root
+#    disabled
+#    group radio cache inet misc audio sdcard_r sdcard_rw diag qcom_diag log
+
+#supprimé	    service profiler_daemon /system/bin/profiler_daemon
+#supprimé	        class late_start
+#supprimé	        user root
+#supprimé	        group root
+#supprimé	        disabled
+
+# virtual sdcard daemon running as media_rw (1023)
+#supprimé	    service sdcard /system/bin/sdcard -u 1023 -g 1023 -l -r /data/media /mnt/shell/emulated
+#supprimé	        class late_start
+#supprimé	        oneshot
+    
+
+#supprimé	    service fuse_extSdCard /system/bin/sdcard -u 1023 -g 1023 -w 1023 -d -f /mnt/media_rw/extSdCard /storage/extSdCard
+#supprimé	        class late_start
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service fuse_UsbDriveA /system/bin/sdcard -u 1023 -g 1023 -d -f /mnt/media_rw/UsbDriveA /storage/UsbDriveA
+#supprimé	        class late_start
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service fuse_UsbDriveB /system/bin/sdcard -u 1023 -g 1023 -d -f /mnt/media_rw/UsbDriveB /storage/UsbDriveB
+#supprimé	        class late_start
+#supprimé	       disabled
+#supprimé	        oneshot
+
+#supprimé	    service fuse_UsbDriveC /system/bin/sdcard -u 1023 -g 1023 -d -f /mnt/media_rw/UsbDriveC /storage/UsbDriveC
+#supprimé	        class late_start
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service fuse_UsbDriveD /system/bin/sdcard -u 1023 -g 1023 -d -f /mnt/media_rw/UsbDriveD /storage/UsbDriveD
+#supprimé	        class late_start
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service fuse_UsbDriveE /system/bin/sdcard -u 1023 -g 1023 -d -f /mnt/media_rw/UsbDriveE /storage/UsbDriveE
+#supprimé	        class late_start
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service fuse_UsbDriveF /system/bin/sdcard -u 1023 -g 1023 -d -f /mnt/media_rw/UsbDriveF /storage/UsbDriveF
+#supprimé	        class late_start
+#supprimé	        disabled
+#supprimé	        oneshot
+
+# Binding fuse mount point to /storage/emulated/legacy
+#on property:init.svc.sdcard=running
+#    wait /mnt/shell/emulated/0
+#    mount none /mnt/shell/emulated/0 /storage/emulated/legacy bind
+
+#supprimé	    on property:vold.decrypt=trigger_restart_framework
+#supprimé	        setprop ro.fuse_sdcard ${persist.fuse_sdcard}
+
+#supprimé	    service hcidump /system/bin/sh /system/etc/hcidump.sh
+#supprimé	        user bluetooth
+#supprimé	        group bluetooth system net_bt_admin net_admin
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service charger /charger
+#supprimé	        class charger
+
+#service ssr_diag /system/bin/ssr_diag # dans s3ve3gjv seulement
+    #class late_start # dans s3ve3gjv seulement
+    #user system # dans s3ve3gjv seulement
+    #group system # dans s3ve3gjv seulement        
+# SSR setting
+#supprimé	    on property:persist.sys.ssr.restart_level=*
+#supprimé	        exec /system/bin/sh /init.qcom.ssr.sh ${persist.sys.ssr.restart_level}
+
+# Define fastmmi
+#supprimé	    service fastmmi /system/bin/mmi
+#supprimé	        user root
+#supprimé	        group root
+#supprimé	        disabled
+
+#supprimé	    service fastmmisrv /system/bin/sh /init.qcom.factory.sh
+#supprimé	        user root
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    on ffbm
+#supprimé	        start fastmmisrv
+
+#supprimé	    service hvdcp /system/bin/hvdcp
+#supprimé	        class core
+#supprimé	        user root
+#supprimé	        disabled
+
+#supprimé	    on property:persist.usb.hvdcp.detect=true
+#supprimé	        start hvdcp
+
+#supprimé	    on property:persist.usb.hvdcp.detect=false
+#supprimé	        stop hvdcp
+
+# charger_monitor for poweron charging
+service charger_monitor /system/bin/charger_monitor qpnp_charger 300000 48 # afyon seulement
+    user system
+    group system
+    disabled
+
+# charger_monitor for poweroff charging
+service charger_monitor2 /system/bin/charger_monitor qpnp_charger 300000 48  # afyon seulement
+    disabled  # afyon seulement
+
+#supprimé	    service diag_mdlog_start /system/bin/diag_mdlog
+#supprimé	        class late_start
+#supprimé	        user sdcard_rw
+#supprimé	        group system qcom_diag sdcard_rw sdcard_r media_rw
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service diag_mdlog_stop /system/bin/diag_mdlog -k
+#supprimé	        class late_start
+#supprimé	        user sdcard_rw
+#supprimé	        group system qcom_diag sdcard_rw sdcard_r media_rw
+#supprimé	        disabled
+#supprimé	        oneshot
+
+#supprimé	    service qlogd /system/xbin/qlogd
+#supprimé	        class main
+#supprimé	        disabled
+#supprimé	    on property:persist.sys.qlogd=1
+#supprimé	        start qlogd
+#supprimé	    on property:persist.sys.qlogd=0
+#supprimé	        stop qlogd
+
+#supprimé	    service rootagent /system/bin/sh /system/etc/init.qcom.rootagent.sh
+#supprimé	        disabled
+#supprimé	        oneshot
+#supprimé	    on property:persist.sys.rootagent=1
+#supprimé	        start rootagent
+#supprimé	    on property:persist.sys.rootagent=0
+#supprimé	        stop rootagent
