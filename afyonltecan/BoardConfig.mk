@@ -16,10 +16,8 @@
 # inherit from common afyonlte
 include device/samsung/afyonlte-common/BoardConfigCommon.mk
 
-# Kernel
-#TARGET_KERNEL_CONFIG := lineage_afyonltecan_defconfig
+# Kernel-source (comment all if using prebuilt)
 TARGET_KERNEL_CONFIG := kernel3.4.113_afyonltecan3_defconfig
-#TARGET_KERNEL_CONFIG := kernel3.4.113_afyonltecanOG3_defconfig
 
 # Init
 TARGET_INIT_VENDOR_LIB := libinit_afyonlte

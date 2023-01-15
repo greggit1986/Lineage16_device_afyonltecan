@@ -1,5 +1,5 @@
-Device Tree For Samsung Galaxy S3 Neo
-===================================== 
+Device Tree For Samsung Galaxy Core LTE
+======================================= 
 
 | Basic   | Spec Sheet                  |
 | -------:|:--------------------------- |
@@ -11,8 +11,7 @@ Device Tree For Samsung Galaxy S3 Neo
 | Storage | 16GB |
 | MicroSD | Up to 64GB |
 | Battery | 2100 mAh |
-| Display | 5.38 x 2.78 x 0.34 in |
-| Camera  | 8 MP, 3264 x 2448 pixels |
+| Display | 4.59in(110 mm) 960x540 px 240 dpi |
+| Camera  | 5 MP, Led flash |
 
-
-![Galaxy S3 Neo](http://cdn2.gsmarena.com/vv/pics/samsung/samsung-i9301l-galaxy-s3-neo.jpg "Galaxy S3 Neo")
+![Galaxy Core LTE G386W](https://www.gsmarena.com/samsung_galaxy_core_lte_g386w-6846.php "Galaxy Core LTE G386W")
