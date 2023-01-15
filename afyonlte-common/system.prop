@@ -1,11 +1,13 @@
 # JJadb fix attempt
 ro.secure=0
 ro.debuggable=1
-persist.sys.usb.config=adb
-# persist.sys.usb.config=mtp,adb
+# persist.sys.usb.config=adb
+persist.sys.usb.config=mtp,adb
 persist.sys.dun.override=0
 persist.sys.root_access=1
 service.adb.root=1
+#New addition for adb
+persist.service.adb.enable=1
 
 # Audio
 af.fast_track_multiplier=1
@@ -58,9 +60,7 @@ debug.disable.bwc=1
 dev.pm.dyn_samplingrate=1
 
 # JJAttempt to fix Display-stockg3886W
-debug.sf.hw=1
-persist.hwc.mdpcomp.enable=true
-debug.mdpcomp.logs=0
+# debug.enabletr=0
 
 # GPS
 persist.gps.qc_nlp_in_use=0
