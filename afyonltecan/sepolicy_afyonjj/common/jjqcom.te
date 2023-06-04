@@ -29,6 +29,31 @@ allow mediaprovider rootfs:dir {read open};
 #allow snap_app rootfs:dir {write};
 
 
+# fix7 - avc: denied { read write } for pid=323 comm="qmuxd" name="smdcntl0" dev="tmpfs" ino=6623 scontext=u:r:qmuxd:s0 tcontext=u:object_r:radio_device:s0 tclass=chr_file permissive=0
+
+allow qmuxd radio_device:chr_file {read write};
+
+
+# fix8 - avc: denied { read write } for pid=10047 comm="hci_qcomm_init" name="smd3" dev="tmpfs" ino=7418 scontext=u:r:bluetooth_loader:s0 tcontext=u:object_r:hci_attach_dev:s0 tclass=chr_file permissive=0
+#avc: denied { open } for pid=7973 comm="hci_qcomm_init" name="smd3" dev="tmpfs" ino=7418 scontext=u:r:bluetooth_loader:s0 tcontext=u:object_r:hci_attach_dev:s0 tclass=chr_file permissive=0
+
+allow bluetooth_loader hci_attach_dev:chr_file {open read write};
+
+
+# fix9 - avc: denied { open } for pid=330 comm="qmuxd" name="smdcntl0" dev="tmpfs" ino=6631 scontext=u:r:qmuxd:s0 tcontext=u:object_r:radio_device:s0 tclass=chr_file permissive=0
+
+allow qmuxd radio_device:chr_file {open};
+
+# fix9 - avc: denied { open } for pid=330 comm="qmuxd" name="smdcntl0" dev="tmpfs" ino=6631 scontext=u:r:qmuxd:s0 tcontext=u:object_r:radio_device:s0 tclass=chr_file permissive=0
+
+allow qmuxd radio_device:chr_file {open};
+
+
+# fix10 - avc: denied { read write } for pid=8111 comm="mm-qcamera-daem" name="video0" dev="tmpfs" ino=5607 scontext=u:r:mm-qcamerad:s0 tcontext=u:object_r:camera_device:s0 tclass=chr_file permissive=0
+
+allow mm-qcamerad camera_device:chr_file {read write};
+
+
 # Stock SM-G386W Qcom init scripts
 allow rootfs shell_exec:file rx_file_perms;
 
