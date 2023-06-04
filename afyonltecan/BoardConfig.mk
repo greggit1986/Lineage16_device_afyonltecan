@@ -33,5 +33,14 @@ TARGET_INIT_VENDOR_LIB := libinit_afyonlte
 # Radio/RIL
 include $(COMMON_PATH)/radio/single/board.mk
 
+#########################jjstuffend##########################
+
+# SELinux
+include device/samsung/afyonltecan/sepolicy_afyonjj/sepolicy.mk
+
+
+##########################jjstuffend##########################
+
+
 # inherit from the proprietary version
 -include vendor/samsung/afyonltecan/BoardConfigVendor.mk
