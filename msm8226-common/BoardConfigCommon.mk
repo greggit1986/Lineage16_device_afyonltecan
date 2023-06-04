@@ -47,6 +47,11 @@ TARGET_HAS_LEGACY_CAMERA_HAL1 := true
 TARGET_NEEDS_LEGACY_CAMERA_HAL1_DYN_NATIVE_HANDLE := true
 TARGET_USES_MEDIA_EXTENSIONS := true
 TARGET_USES_NON_TREBLE_CAMERA := true
+#stuff from matisse for testing
+#TARGET_PROVIDES_CAMERA_HAL := true
+#USE_DEVICE_SPECIFIC_CAMERA := true
+#TARGET_USE_COMPAT_GRALLOC_ALIGN := true
+#TARGET_USES_CPU_BOOST_HINT := true
 
 # Dexpreopt
 ifeq ($(HOST_OS),linux)
@@ -132,6 +137,7 @@ TARGET_USES_WCNSS_CTRL           := true
 WPA_SUPPLICANT_VERSION           := VER_0_8_X
 WIFI_DRIVER_FW_PATH_STA          := "sta"
 WIFI_DRIVER_FW_PATH_AP           := "ap"
+
 
 # inherit from the proprietary version
 include vendor/samsung/msm8226-common/BoardConfigVendor.mk

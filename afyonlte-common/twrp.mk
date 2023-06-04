@@ -21,22 +21,43 @@ TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/platform/msm_hsusb/gadget/lun%d
 TW_BRIGHTNESS_PATH := "/sys/class/leds/lcd-backlight/brightness"
 TW_DEFAULT_BRIGHTNESS := 162
 TW_HAS_DOWNLOAD_MODE := true
-TW_INCLUDE_CRYPTO := true
+TW_INCLUDE_CRYPTO := false #true
 TW_MAX_BRIGHTNESS := 255
 TW_MTP_DEVICE := "/dev/mtp_usb"
 TW_NO_EXFAT_FUSE := true
 TW_NO_LEGACY_PROPS := true
 TW_NO_REBOOT_BOOTLOADER := true
-TW_THEME := portrait_hdpi
+#TW_THEME := portrait_hdpi #hpdi is for 1280x720 or HIGHER
+TW_THEME := portrait_mdpi
 
 #jjajout
 BOARD_HAS_NO_REAL_SDCARD := true
 TW_NO_BATT_PERCENT := true
 #TW_CUSTOM_POWER_BUTTON := 107
-TW_NO_REBOOT_RECOVERY := true
 #RECOVERY_TOUCHSCREEN_SWAP_XY := true
 #RECOVERY_TOUCHSCREEN_FLIP_Y := true
 #RECOVERY_TOUCHSCREEN_FLIP_X := true
 TWRP_EVENT_LOGGING := true
 # BOARD_HAS_FLIPPED_SCREEN := true
+#TW_NO_REBOOT_BOOTLOADER := true
+PRODUCT_COPY_FILES += $(COMMON_PATH)/twrp/recovery/root/etc/twrp.fstab:recovery/root/etc/twrp.fstab
 
+
+# JJ addition
+TW_HAVE_SELINUX := false
+TW_EXCLUDE_SUPERSU := true
+TW_NO_CPU_TEMP := true
+TW_EXCLUDE_ENCRYPTED_BACKUPS := true
+TW_NO_SCREEN_TIMEOUT := true
+TW_NEVER_UNMOUNT_SYSTEM := true
+TW_DEFAULT_LANGUAGE := en
+TW_EXTRA_LANGUAGES := false
+SMALLER_FONT_FOOTPRINT := true
+TW_SCREEN_BLANK_ON_BOOT := true
+TW_NO_REBOOT_RECOVERY := true
+
+#BOARD_HAS_NO_MISC_PARTITION := true
+#TW_INCLUDE_FUSE_EXFAT := true
+
+# Use mke2fs instead of make_ext4fs
+TARGET_USES_MKE2FS := true

@@ -58,6 +58,17 @@ BOARD_CUSTOM_BOOTIMG_MK := hardware/samsung/mkbootimg.mk
 LZMA_RAMDISK_TARGETS := recovery
 TARGET_KERNEL_SOURCE := kernel/samsung/msm8226
 
+#TARGET_KERNEL_CONFIG := msm8226-sec_defconfig
+#TARGET_KERNEL_SELINUX_CONFIG := selinux_defconfig
+
+# JJCompression options-should not be needed on LOS16
+#BOARD_NEEDS_LZMA_MINIGZIP := true
+#BOARD_RAMDISK_USE_XZ := true
+#LZMA_COMPRESSION := -9 #was commented
+#BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
+
+#BOARD_CUSTOM_BOOTIMG_MK := $(COMMON_PATH)/twrp/recovery/customrecoveryimg.mk
+
 # Legacy BLOB Support
 TARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS := true
 TARGET_PROCESS_SDK_VERSION_OVERRIDE += \
@@ -86,14 +97,14 @@ TARGET_RIL_VARIANT := caf
 
 # Recovery
 BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../$(COMMON_PATH)/recovery/recovery_keys.c
-#BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
-BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_15x24.h\"
+BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 BOARD_USES_MMCUTILS := true
 BOARD_HAS_LARGE_FILESYSTEM := true
 BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_RECOVERY_SWIPE := true
 TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab.qcom
 #RECOVERY_VARIANT := twrp
+
 
 # SELinux
 include $(COMMON_PATH)/sepolicy/sepolicy.mk
@@ -108,6 +119,7 @@ PRODUCT_SHIPPING_API_LEVEL := 18
 ifeq ($(WITH_TWRP),true)
 -include $(COMMON_PATH)/twrp.mk
 endif
+
 #TW_USE_TOOLBOX := true
 
 # Use Snapdragon LLVM if available on build server

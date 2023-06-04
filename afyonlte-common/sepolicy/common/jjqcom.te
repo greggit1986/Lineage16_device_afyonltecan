@@ -1,0 +1,37 @@
+
+# jjavcfixes
+# fix1 - avc: denied { execute_no_trans } for path="/system/bin/sh" dev="mmcblk0p23" ino=729 scontext=u:r:init:s0 tcontext=u:object_r:shell_exec:s0 tclass=file permissive=0
+
+allow init shell_exec:file {execute_no_trans};
+
+# fix2 - avc: denied { setattr } for name="0" dev="mmcblk0p25" ino=130050 scontext=u:r:vold:s0 tcontext=u:object_r:rootfs:s0 tclass=dir permissive=0
+
+allow vold rootfs:dir {setattr};
+
+
+# fix3 - avc: denied { write } for name="0" dev="mmcblk0p25" ino=520194 scontext=u:r:vold:s0 tcontext=u:object_r:rootfs:s0 tclass=dir permissive=0
+
+allow vold rootfs:dir {write};
+
+
+# fix4 - avc: denied { write } for name="0" dev="mmcblk0p25" ino=520194 scontext=u:r:mediaprovider:s0:c512,c768 tcontext=u:object_r:rootfs:s0 tclass=dir permissive=0
+
+allow mediaprovider rootfs:dir {write};
+
+
+# fix5 - avc: denied { read open } for name="0" dev="mmcblk0p25" ino=520194 scontext=u:r:mediaprovider:s0:c512,c768 tcontext=u:object_r:rootfs:s0 tclass=dir permissive=0
+
+allow mediaprovider rootfs:dir {read open};
+
+
+# fix6 - avc:  denied { write } for comm=4173796E635461736B202333 name="0" dev="mmcblk0p25" ino=520194 scontext=u:r:snap_app:s0:c512,c768 tcontext=u:object_r:rootfs:s0 tclass=dir permissive=0
+
+#allow snap_app rootfs:dir {write};
+
+
+# Stock SM-G386W Qcom init scripts
+allow rootfs shell_exec:file rx_file_perms;
+
+# pds backup and restorecon
+allow shell camera_data_file:dir getattr;
+allow persist_file rootfs:filesystem associate;
