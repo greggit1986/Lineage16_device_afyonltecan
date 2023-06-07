@@ -4,7 +4,7 @@
 #ro.boot.selinux=disabled, permissive ou enforcing
 #ro.boot.selinux=disabled  #do not help
 ro.secure=0
-ro.debuggable=1
+ro.debuggable=1 # Allow adb root
 # persist.sys.usb.config=adb
 persist.sys.usb.config=mtp,adb
 persist.sys.dun.override=0
@@ -12,7 +12,9 @@ persist.sys.root_access=1
 service.adb.root=1
 #New addition for adb
 persist.service.adb.enable=1
-
+#New addition for adb-2
+ro.adb.secure=0 # Disable adb authentication
+ro.force.debuggable=1
 
 # Audio
 af.fast_track_multiplier=1

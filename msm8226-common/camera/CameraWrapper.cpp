@@ -228,8 +228,8 @@ static char* camera_fixup_getparams(int id, const char* settings) {
 #endif
 
     params.set(KEY_SUPPORTED_ISO_MODES, iso_values[id]);
-    if (get_product_device() == S3VE3G || get_product_device() == AFYONLTE || get_product_device() == MS01 || get_product_device() == KMINI3G) {
-        params.set(CameraParameters::KEY_PREFERRED_PREVIEW_SIZE_FOR_VIDEO, "960x540");
+   if (get_product_device() == S3VE3G || get_product_device() == MS01 || get_product_device() == KMINI3G) {
+        params.set(CameraParameters::KEY_PREFERRED_PREVIEW_SIZE_FOR_VIDEO, "1280x720");
         params.set(CameraParameters::KEY_SUPPORTED_SCENE_MODES,
                        "auto,asd,action,portrait,landscape,night,night-portrait,theatre,beach,snow,sunset,"
                        "steadyphoto,fireworks,sports,party,candlelight,backlight,flowers,AR");
@@ -249,6 +249,33 @@ static char* camera_fixup_getparams(int id, const char* settings) {
             params.set(KEY_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "60,off");
         }
     }
+
+//JJEDIT
+    if (get_product_device() == AFYONLTE) {
+        params.set(CameraParameters::KEY_PREFERRED_PREVIEW_SIZE_FOR_VIDEO, "640x480");
+        params.set(CameraParameters::KEY_SUPPORTED_SCENE_MODES,
+                       "auto,asd,action,portrait,landscape,night,night-portrait,theatre,beach,snow,sunset,"
+                       "steadyphoto,fireworks,sports,party,candlelight,backlight,flowers,AR");
+        /* If the vendor has HFR values but doesn't also expose that
+         * this can be turned off, fixup the params to tell the Camera
+         * that it really is okay to turn it off.
+         */
+        const char *hfrModeValues = params.get(KEY_VIDEO_HFR_VALUES);
+        if (hfrModeValues && !strstr(hfrModeValues, "off")) {
+            char hfrModes[strlen(hfrModeValues) + 4 + 1];
+            sprintf(hfrModes, "%s,off", hfrModeValues);
+            params.set(KEY_VIDEO_HFR_VALUES, hfrModes);
+        }
+        if (id == BACK_CAMERA_ID) {
+//            params.set(CameraParameters::KEY_SUPPORTED_FLASH_MODES, "auto,on,off,torch");
+//             params.set(KEY_SUPPORTED_HFR_SIZES, "960x540,720x480");
+//            params.set(KEY_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "60,off");
+            params.set(CameraParameters::KEY_SUPPORTED_FLASH_MODES, "auto,on,off");
+            params.set(KEY_SUPPORTED_HFR_SIZES, "960x540,720x480");
+            params.set(KEY_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "30,off");
+        }
+    }
+//JJEDITEND
 
     if (( get_product_device() == MATISSE) || ( get_product_device() == MILLET)) {
         if(id == BACK_CAMERA_ID){
