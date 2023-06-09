@@ -35,3 +35,8 @@ allow camera socket_device:sock_file write;
 #allow camera system:binder call; #unknown type
 #allow camera system:unix_stream_socket { read write setopt }; #unknown type
 allow camera system_data_file:file { open write };
+
+# JJADD
+allow mediaserver camera_device:chr_file { open read write };
+allow mediacodec camera_device:chr_file { open read write };
+
