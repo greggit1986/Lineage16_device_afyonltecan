@@ -15,6 +15,8 @@ persist.service.adb.enable=1
 #New addition for adb-2
 ro.adb.secure=0 # Disable adb authentication
 ro.force.debuggable=1
+#ro.control_privapp-permissions=log
+ro.control_privapp_permissions=log
 
 # Audio
 af.fast_track_multiplier=1

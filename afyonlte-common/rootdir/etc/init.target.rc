@@ -86,7 +86,8 @@ service qcomsysd /system/bin/qcom-system-daemon
     class main
 
 #start camera server as daemon
-service qcamerasvr /system/bin/mm-qcamera-daemon
+#service qcamerasvr /system/bin/mm-qcamera-daemon
+service qcamerasvr /system/vendor/bin/mm-qcamera-daemon
     class main
 	user camera
     group camera system inet input graphics
