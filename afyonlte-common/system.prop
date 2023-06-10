@@ -1,4 +1,5 @@
 # JJadb fix attempt
+<<<<<<< HEAD
 #ro.build.selinux=0   selinux disabled
 #ro.build.selinux=0  #do not help
 #ro.boot.selinux=disabled, permissive ou enforcing
@@ -12,6 +13,7 @@ persist.sys.root_access=1
 service.adb.root=1
 #New addition for adb
 persist.service.adb.enable=1
+
 #New addition for adb-2
 ro.adb.secure=0 # Disable adb authentication
 ro.force.debuggable=1

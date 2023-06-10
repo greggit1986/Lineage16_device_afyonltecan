@@ -22,6 +22,8 @@ include device/samsung/afyonlte-common/BoardConfigCommon.mk
 #Nuke later-just to figure the issue with this build
 #TARGET_KERNEL_CONFIG := twrp_afyonltecan8_defconfig
 #TARGET_KERNEL_VARIANT_CONFIG := msm8926-sec_afyonltecanjj_defconfig
+
+# Kernel-source (comment all if using prebuilt)
 TARGET_KERNEL_CONFIG := kernel3.4.113_afyonltecan3_defconfig
 
 # Init
